@@ -1,0 +1,53 @@
+.Home {
+  width: 3/4;
+  text-align: center;
+}
+
+.inputField {
+  width: 70%;
+  padding-block: 10px;
+  padding-left: 10px;
+  text-align: center;
+}
+
+.layout {
+  width: 100%;
+  display: flex;
+}
+
+
+.task_disp {
+  width: 90%;
+}
+
+.task_disp_inactive {
+  width: 90%;
+  text-decoration: line-through;
+}
+
+.buttons {
+  width: 15%;
+  height: 30px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.ulList {
+  padding-top: 30px;
+  width: 100%;
+}
+
+.itemListActive {
+  list-style: none;
+}
+
+.itemListInActive {
+  list-style: none;
+}
+
+
+.eachItem {
+  padding: 20px;
+  border-style: solid;
+}
