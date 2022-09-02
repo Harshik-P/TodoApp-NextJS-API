@@ -2,6 +2,7 @@ import { useState } from 'react';
 import jwt, { verify } from 'jsonwebtoken';
 import { Router, useRouter } from 'next/router';
 import styles from '../styles/Login.module.css'
+import { setTokenCookie } from '../src/auth/tokenCookies';
 
 export default function Home() {
 
@@ -13,24 +14,24 @@ export default function Home() {
     console.log(email, password);
     e.preventDefault();
 
-    const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/users/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    }).then((t) => t.json());
+    try {
+      const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      }).then((t) => t.json());
+      console.log(res);
+      const token = res.token;
+      console.log(token);
 
-    console.log(res);
-    const token = res.token;
-    console.log(token);
-
-    if (token) {
-      const det = jwt.decode(token);
-      console.log(det);
-      // if (verify(token)) {
-      await router.replace('/home');
-      // }
+      if (token) {
+        setTokenCookie(token);
+        await router.replace('/home');
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -55,17 +56,3 @@ export default function Home() {
     </div>
   )
 }
-
-
-
-// export const getServerSideProps = async context => {
-//   const data = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`);
-//   let jsonData = await data.json();
-//   console.log(jsonData);
-
-//   return {
-//     props: {
-//       jsonData,
-//     }
-//   }
-// }

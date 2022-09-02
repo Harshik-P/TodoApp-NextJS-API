@@ -1,22 +1,26 @@
 import { useEffect, useState } from 'react'
+import { getUserJWT } from './api/user';
 import styles from '../styles/Home.module.css'
+import { removeTokenCookie } from '../src/auth/tokenCookies';
+import { Router, useRouter } from 'next/router';
 
-export default function Home({ jsonData }) {
+
+export default function Home({ userJWT }) {
 
     let [todoItem, setTodoItem] = useState("");
     let [items, setItems] = useState([{}]);
+    const router = useRouter();
 
-
+    console.log(userJWT);
     useEffect(() => {
         getTasks();
     })
-
 
     const getTasks = async () => {
         const data = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
+                'Authorization': `Bearer ${userJWT}`,
             },
         });
         let jsonData = await data.json();
@@ -29,7 +33,7 @@ export default function Home({ jsonData }) {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
+                    'Authorization': `Bearer ${userJWT}`,
                 },
                 body: JSON.stringify({ description: todoItem, completed: false }),
             });
@@ -51,7 +55,7 @@ export default function Home({ jsonData }) {
             method: "PATCH",
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
+                'Authorization': `Bearer ${userJWT}`,
             },
             body: JSON.stringify({ completed: !completed }),
         });
@@ -66,7 +70,7 @@ export default function Home({ jsonData }) {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
+                'Authorization': `Bearer ${userJWT}`,
             },
         });
         const data = await res.json();
@@ -74,9 +78,19 @@ export default function Home({ jsonData }) {
         getTasks();
     }
 
+
+    const handleLogout = () => {
+        console.log("pressing");
+        removeTokenCookie();
+        router.replace('/');
+    }
+
     return (
         <div className={styles.Home}>
-            <h1>TODO APP</h1>
+            <div className={styles.logout}>
+                <h1 className={styles.heading}>TODO APP</h1>
+                <button className={styles.logout_button} onClick={handleLogout}> Logout </button>
+            </div>
             <div>
                 <input type="text" className={styles.inputField}
                     value={todoItem}
@@ -96,7 +110,6 @@ export default function Home({ jsonData }) {
                                         <li className={styles.eachItem} key={_id} onClick={() => handleToggle(_id, completed)}>{description}</li>
                                     </div>
                                     <div className={styles.buttons}>
-                                        {/* <button> Update </button> */}
                                         <button onClick={() => handleDelete(_id)}> Delete </button>
                                     </div>
                                 </div>
@@ -112,7 +125,6 @@ export default function Home({ jsonData }) {
                                         <li className={styles.eachItem} key={_id} onClick={() => handleToggle(_id, completed)}>{description}</li>
                                     </div>
                                     <div className={styles.buttons}>
-                                        {/* <button> Update </button> */}
                                         <button onClick={() => handleDelete(_id)}> Delete </button>
                                     </div>
                                 </div>
@@ -125,36 +137,11 @@ export default function Home({ jsonData }) {
     )
 }
 
-
-
 export const getServerSideProps = async context => {
-    // console.log("running");
-
-
-    const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/users/me`, {
-        // credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
-        },
-    });
-    const cont = await res.json();
-    // console.log(cont);
-
-
-
-    const data = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzBmMmQ5M2IxYTdhZTAwMTY1Mzk0YTQiLCJpYXQiOjE2NjIwMzY1NTR9.MHc26Om2Td0zFUE58TdHrz_HgB7xl527GInyE6XQPk0`
-        },
-    });
-    let jsonData = await data.json();
-    // console.log(jsonData);
-
+    const userJWT = getUserJWT(context.req);
     return {
         props: {
-            jsonData,
+            userJWT: userJWT
         }
     }
 }
