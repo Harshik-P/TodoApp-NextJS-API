@@ -3,20 +3,25 @@ import { getUserJWT } from './api/user';
 import styles from '../styles/Home.module.css'
 import { removeTokenCookie } from '../src/auth/tokenCookies';
 import { Router, useRouter } from 'next/router';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { addTasks, deleteTasks, toggleTasks, getTasks } from '../store/action';
+import { wrapper } from '../store/store.js';
 
 export default function Home({ userJWT }) {
 
     let [todoItem, setTodoItem] = useState("");
-    let [items, setItems] = useState([{}]);
+    const items = useSelector((state) => state.allTasks.tasks);
+    const dispatch = useDispatch();
+
     const router = useRouter();
 
     console.log(userJWT);
     useEffect(() => {
-        getTasks();
-    })
+        handleGetTasks();
+    }, [])
 
-    const getTasks = async () => {
+
+    const handleGetTasks = async () => {
         const data = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -24,7 +29,8 @@ export default function Home({ userJWT }) {
             },
         });
         let jsonData = await data.json();
-        setItems(jsonData);
+        console.log(jsonData)
+        dispatch(getTasks(jsonData));
     }
 
     const handleAdd = async () => {
@@ -37,9 +43,10 @@ export default function Home({ userJWT }) {
                 },
                 body: JSON.stringify({ description: todoItem, completed: false }),
             });
-            console.log(res, "added task");
+            let jsonData = await res.json();
+            console.log(jsonData, "added task");
             setTodoItem("");
-            getTasks();
+            dispatch(addTasks(jsonData));
         }
     }
 
@@ -59,9 +66,9 @@ export default function Home({ userJWT }) {
             },
             body: JSON.stringify({ completed: !completed }),
         });
-        console.log(res)
-        getTasks();
-
+        let jsonData = await res.json();
+        console.log(jsonData)
+        dispatch(toggleTasks(jsonData));
     }
 
 
@@ -75,7 +82,7 @@ export default function Home({ userJWT }) {
         });
         const data = await res.json();
         console.log(data)
-        getTasks();
+        dispatch(deleteTasks(data));
     }
 
 
@@ -137,11 +144,11 @@ export default function Home({ userJWT }) {
     )
 }
 
-export const getServerSideProps = async context => {
+export const getServerSideProps = wrapper.getServerSideProps(() => async (context) => {
     const userJWT = getUserJWT(context.req);
     return {
         props: {
             userJWT: userJWT
         }
     }
-}
+});
