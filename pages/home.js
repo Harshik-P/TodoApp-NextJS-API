@@ -146,6 +146,16 @@ export default function Home({ userJWT }) {
 
 export const getServerSideProps = wrapper.getServerSideProps(() => async (context) => {
     const userJWT = getUserJWT(context.req);
+
+    if (!userJWT) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
+
     return {
         props: {
             userJWT: userJWT
