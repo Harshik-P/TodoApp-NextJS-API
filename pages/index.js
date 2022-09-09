@@ -1,39 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import jwt, { verify } from 'jsonwebtoken';
 import { Router, useRouter } from 'next/router';
 import styles from '../styles/Login.module.css'
 import { setTokenCookie } from '../src/auth/tokenCookies';
+import { getUserAction } from '../store/actions/user';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserJWT } from './api/user';
+import { wrapper } from '../store/store.js';
+
 
 export default function Home() {
 
   let [email, setEmail] = useState("");
   let [password, setPassword] = useState("");
   const router = useRouter();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.userDet.user);
+
 
   const handleLogin = async (e) => {
-    console.log(email, password);
     e.preventDefault();
-
-    try {
-      const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      }).then((t) => t.json());
-      console.log(res);
-      const token = res.token;
-      console.log(token);
-
-      if (token) {
-        setTokenCookie(token);
-        await router.replace('/home');
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    dispatch(getUserAction({ email, password }));
+    router.replace('/home');
+    console.log(user);
   }
+
 
   return (
     <div className={styles.Login}>

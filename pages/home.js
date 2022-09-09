@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { getUserJWT } from './api/user';
 import styles from '../styles/Home.module.css'
 import { removeTokenCookie } from '../src/auth/tokenCookies';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
-import { addTasks, deleteTasks, toggleTasks, getTasks } from '../store/action';
-import { wrapper } from '../store/store.js';
+import { getTasks, getAddTasks, getToggleTasks, getDeleteTasks } from '../store/actions/tasks';
 
 export default function Home({ userJWT }) {
 
@@ -15,38 +14,16 @@ export default function Home({ userJWT }) {
 
     const router = useRouter();
 
-    console.log(userJWT);
-    useEffect(() => {
-        handleGetTasks();
-    }, [])
-
+    dispatch(getTasks(userJWT));
 
     const handleGetTasks = async () => {
-        const data = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userJWT}`,
-            },
-        });
-        let jsonData = await data.json();
-        console.log(jsonData)
-        dispatch(getTasks(jsonData));
+        dispatch(getTasks(userJWT));
     }
 
     const handleAdd = async () => {
         if (todoItem) {
-            const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${userJWT}`,
-                },
-                body: JSON.stringify({ description: todoItem, completed: false }),
-            });
-            let jsonData = await res.json();
-            console.log(jsonData, "added task");
             setTodoItem("");
-            dispatch(addTasks(jsonData));
+            dispatch(getAddTasks({ userJWT, todoItem }));
         }
     }
 
@@ -58,31 +35,12 @@ export default function Home({ userJWT }) {
 
 
     const handleToggle = async (id, completed) => {
-        const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks/${id}`, {
-            method: "PATCH",
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userJWT}`,
-            },
-            body: JSON.stringify({ completed: !completed }),
-        });
-        let jsonData = await res.json();
-        console.log(jsonData)
-        dispatch(toggleTasks(jsonData));
+        dispatch(getToggleTasks({ userJWT, id, completed }));
     }
 
 
     const handleDelete = async (id) => {
-        const res = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks/${id}`, {
-            method: "DELETE",
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userJWT}`,
-            },
-        });
-        const data = await res.json();
-        console.log(data)
-        dispatch(deleteTasks(data));
+        dispatch(getDeleteTasks({ userJWT, id }));
     }
 
 
@@ -144,8 +102,8 @@ export default function Home({ userJWT }) {
     )
 }
 
-export const getServerSideProps = wrapper.getServerSideProps(() => async (context) => {
-    const userJWT = getUserJWT(context.req);
+export const getServerSideProps = async (context) => {
+    const userJWT = await getUserJWT(context.req);
 
     if (!userJWT) {
         return {
@@ -161,4 +119,4 @@ export const getServerSideProps = wrapper.getServerSideProps(() => async (contex
             userJWT: userJWT
         }
     }
-});
+}
